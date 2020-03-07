@@ -1,0 +1,13 @@
+---
+# etckeeperインストール
+- name: etckeeper_install
+  yum:
+    name=etckeeper
+    enablerepo=epel
+    state=present
+
+- name: etckeeper_init
+  shell: etckeeper init
+
+#- name: etckeeper_commit
+#  shell: etckeeper commit -m "first commit"

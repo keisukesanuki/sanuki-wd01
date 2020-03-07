@@ -1,0 +1,23 @@
+---
+# vars file for nginx
+  ex_domain:
+    - { fqdn: 'fingerease.work'}
+
+# vars file for php-fpm
+  php_var: 72
+  php_modules:
+    - php
+    - php-fpm
+    - php-mbstring
+    - php-mysqli
+    - php-opcache
+    - php-xml
+    - php-gd
+    - php-bcmath
+
+# vars file for mysql-server80
+  innodb_buffer_pool_size: 128M 
+  key_buffer_size: 128M
+
+# vars file for ssl_self
+  domain_name: fingerease.work

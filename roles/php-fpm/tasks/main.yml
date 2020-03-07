@@ -1,0 +1,31 @@
+---
+# tasks file for php72
+- name: install_libargon2
+  yum:
+    name=libargon2
+    state=present
+    enablerepo=epel
+    disablerepo=*
+
+- name: Remi-repo_add
+  yum:
+    name: http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+    state: present
+
+- name: install_php
+  yum:
+    name: "{{ item }}"
+    state: present
+    enablerepo: "remi-php{{ php_var }}"
+  with_items:
+    - "{{ php_modules }}"
+
+- name: conf_put
+  copy:
+    src: ../files/www.conf
+    dest: /etc/php-fpm.d/www.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  notify: php-fpm_start

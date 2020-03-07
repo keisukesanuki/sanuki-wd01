@@ -1,0 +1,7 @@
+---
+# 起動
+- name: php-fpm_start
+  service:
+    name: php-fpm
+    state: started
+    enabled: yes

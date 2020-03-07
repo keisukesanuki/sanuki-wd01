@@ -1,0 +1,51 @@
+---
+# tasks file for nginx
+- name: add_nginxrepo
+  template:
+    src: ../files/nginx.repo
+    dest: /etc/yum.repos.d/nginx.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: install_nginx
+  yum:
+    name:
+      - nginx
+      - certbot
+    state: present
+
+- name: vhosts_mkdir
+  file:
+    path: "/var/www/vhosts/{{ item.fqdn }}/public_html"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ ex_domain }}"
+
+- name: vhosts_put
+  template:
+    src: "../templates/vhost.j2"
+    dest: "/etc/nginx/conf.d/vhost.{{ item.fqdn }}.conf.tmp"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ ex_domain }}"
+
+- name: vhosts_ssl_put
+  template:
+    src: "../templates/vhost_ssl.j2"
+    dest: "/etc/nginx/conf.d/vhost.{{ item.fqdn }}_ssl.conf"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ ex_domain }}"
+
+- name: restart_nginx
+  systemd:
+    name: nginx
+    state: restarted

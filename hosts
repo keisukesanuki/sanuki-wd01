@@ -1,0 +1,5 @@
+[target]
+sanuki-wd01 ansible_host=192.168.33.10
+
+#[localhost]
+#127.0.0.1 ansible_python_interpreter=/bin/python

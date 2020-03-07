@@ -1,0 +1,28 @@
+---
+# tasks file for ssl_self
+- name: httpd_install
+  yum:
+    name: httpd
+    state: present
+
+- name: put-shell
+  template:
+    src="../files/certgen.sh"
+    dest="/var/tmp/certgen.sh"
+    owner=root
+    group=root
+    mode=0755
+
+- name: check-cert
+  stat:
+    path="/var/tmp/server.crt"
+  register: cert_check
+
+- name: exec-shell
+  script: "../files/certgen.sh"
+  when: not cert_check.stat.exists
+
+#- name: httpd_restart
+#  systemd:
+#    name: httpd
+#    enabled: yes

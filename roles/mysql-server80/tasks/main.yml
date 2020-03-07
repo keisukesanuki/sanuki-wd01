@@ -1,0 +1,32 @@
+---
+# tasks file for mysql-server80
+- name: repo_add
+  yum:
+    name: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+    state: present
+
+- name: mysql-install
+  yum:
+    name:
+      - mysql-server
+      - expect
+    state: present
+  notify: mysqld_start
+
+- name: put_conf
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: restart_mysql
+  systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: exec_mysql_secure_installation
+  script: ../files/mysql_secure_installation

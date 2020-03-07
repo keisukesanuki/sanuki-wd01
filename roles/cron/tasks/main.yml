@@ -1,0 +1,42 @@
+---
+# tasks file for cron
+- name: create_directory
+  file:
+    state: directory
+    name: /usr/local/TOOLS/bin
+    mode: 0775
+
+- name: put_backup-file
+  copy:
+    src: ../files/{{ item }}
+    dest: /usr/local/TOOLS/bin/
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - process_nginx_check.sh
+    - process_mysql_check.sh
+    - mysql_backup.sh
+    - wordpress_backup.sh
+    - cert-renew.sh
+    - mymysql.sh
+
+- name: set crontab
+  cron:
+    user: "{{ item.user }}"
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    day: "{{ item.day }}"
+    job: "{{ item.job }}"
+    state: present
+  with_items:
+    - { user: 'root', name: 'nginx check scripts', minute: "*/5", hour: 0, day: "*", job: '/usr/local/TOOLS/bin/process_nginx_check.sh' }
+    - { user: 'root', name: 'mysqld check scripts', minute: "*/5", hour: 0, day: "*", job: '/usr/local/TOOLS/bin/process_mysql_check.sh' }
+    #- { user: 'root', name: 'certbot renew', minute: 00, hour: 3, day: "1", job: '/usr/local/TOOLS/bin/cert-renew.sh' }
+    - { user: 'root', name: 'certbot renew', minute: 00, hour: 3, day: "1", job: '/bin/certbot renew --post-hook "systemctl reload nginx"' }
+
+- name: get_logadmin
+  git:
+    repo: https://github.com/keisukesanuki/logadmin.git
+    dest: /usr/local/TOOLS/bin/logadmin

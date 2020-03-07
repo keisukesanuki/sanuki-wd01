@@ -1,0 +1,92 @@
+upstream php-fpm-{{ item.fqdn }} {
+  ip_hash;
+  server unix:/var/run/php-fpm-wpuser.sock;
+}
+
+server {
+     listen 80;
+     server_name {{ item.fqdn }};
+     return 301 https://$host$request_uri;
+}
+
+
+server {
+    listen       443 ssl;
+    server_name  {{ item.fqdn }};
+
+    set $root_path '/var/www/vhosts/{{ item.fqdn }}/public_html/';
+    root $root_path;
+    index  index.html index.php;
+    access_log   /var/log/nginx/{{ item.fqdn }}-ssl_access.log main;
+    error_log   /var/log/nginx/{{ item.fqdn }}-ssl_error.log;
+
+    # 自己証明書
+    ssl_certificate      /etc/httpd/conf/server.crt;
+    ssl_certificate_key  /etc/httpd/conf/server.key;
+
+    # letencript
+    #ssl_certificate      /etc/letsencrypt/live/{{ item.fqdn }}/fullchain.pem;
+    #ssl_certificate_key  /etc/letsencrypt/live/{{ item.fqdn }}/privkey.pem;
+
+    ssl_protocols              TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers  on;
+    ssl_ciphers                'ECDH !aNULL !eNULL !SSLv2 !SSLv3';
+    ssl_session_cache          shared:SSL:10m;
+    ssl_session_timeout        10m;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # ドメイン直でのアクセス用
+    # location  =/ {
+    #    return 301 https://$host;
+    # }
+
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+     location ~ \.php$ {
+    #    root           html;
+         fastcgi_pass   php-fpm-{{ item.fqdn }};
+         fastcgi_index  index.php;
+         fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+         include        fastcgi_params;
+     }
+
+    # パーマリンク
+     location  / {
+         try_files $uri $uri/ /index.php$args;
+     }
+
+    # wp-config.phpへのアクセス拒否設定
+     location ~* /wp-config.php {
+         deny all;
+     }
+
+    # gzip圧縮する
+     gzip on;
+     gzip_types text/css text/javascript;
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
