@@ -1,0 +1,14 @@
+---
+# Main Playbook
+- name: apply master configuration to target
+  hosts: target
+#  remote_user: centos
+  remote_user: vagrant
+  become: yes
+  roles:
+    - common
+    - ssl_self
+    - nginx
+    - php-fpm
+    - cron
+    - mysql-server80

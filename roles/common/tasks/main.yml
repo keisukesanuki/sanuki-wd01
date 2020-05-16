@@ -50,6 +50,7 @@
       - unzip
       - zip
       - etckeeper
+      - logwatch
     state: present
 
 # hostname変更
